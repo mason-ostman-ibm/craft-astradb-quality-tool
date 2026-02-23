@@ -1,0 +1,341 @@
+# AstraDB Quality Check Tool
+
+A comprehensive Python CLI tool for cleaning, managing, and refining question-answer pairs in AstraDB vector databases.
+
+## Features
+
+- 🔍 **Advanced Search**: Similarity and keyword search with filtering
+- 🔄 **Duplicate Management**: Detect and remove exact and semantic duplicates
+- ✏️ **Data Correction**: Update Q&A pairs individually or in batch
+- 🔀 **Smart Merging**: Merge similar questions with different answers
+- 📊 **Quality Scoring**: Identify and fix data quality issues
+- 📤 **Export/Import**: Backup and restore data in JSON/CSV formats
+- 📝 **Audit Logging**: Track all changes with undo functionality
+- 📈 **Statistics**: Comprehensive collection health metrics
+
+## Prerequisites
+
+- Python 3.9 or higher
+- AstraDB account with:
+  - Database endpoint URL
+  - Application token
+  - Keyspace and collection set up
+
+## Installation
+
+### 1. Clone or Download
+
+```bash
+cd astraDB-quality-check-tool
+```
+
+### 2. Create Virtual Environment
+
+```bash
+python -m venv venv
+
+# On macOS/Linux:
+source venv/bin/activate
+
+# On Windows:
+venv\Scripts\activate
+```
+
+### 3. Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Install the Package
+
+```bash
+pip install -e .
+```
+
+## Configuration
+
+### 1. Create Environment File
+
+Copy the example environment file:
+
+```bash
+cp .env.example .env
+```
+
+### 2. Configure AstraDB Credentials
+
+Edit `.env` and add your AstraDB credentials:
+
+```env
+# AstraDB Configuration
+ASTRA_DB_ENDPOINT=https://your-database-id.apps.astra.datastax.com
+ASTRA_DB_TOKEN=AstraCS:your-token-here
+ASTRA_DB_KEYSPACE=default_keyspace
+ASTRA_DB_COLLECTION=qa_collection
+
+# Search Configuration
+SIMILARITY_THRESHOLD=0.85
+MAX_SEARCH_RESULTS=20
+
+# Audit Configuration
+AUDIT_LOG_PATH=./audit_logs
+ENABLE_AUDIT_LOG=true
+
+# Quality Check Configuration
+MIN_QUESTION_LENGTH=10
+MIN_ANSWER_LENGTH=20
+QUALITY_SCORE_THRESHOLD=70
+```
+
+### 3. Test Connection
+
+```bash
+astra-clean test-connection
+```
+
+## Usage
+
+### Basic Commands
+
+#### View Collection Statistics
+
+```bash
+# Basic stats
+astra-clean stats
+
+# Detailed stats with categories and sources
+astra-clean stats --detailed
+```
+
+#### Show Document Details
+
+```bash
+astra-clean show <document_id>
+```
+
+#### Update a Document
+
+```bash
+# Update question
+astra-clean update <doc_id> --question "New question text"
+
+# Update answer
+astra-clean update <doc_id> --answer "New answer text"
+
+# Update multiple fields
+astra-clean update <doc_id> --question "New question" --answer "New answer" --category "HR"
+```
+
+#### Delete a Document
+
+```bash
+astra-clean delete <doc_id>
+```
+
+### Search Operations (Coming Soon)
+
+```bash
+# Similarity search
+astra-clean search similar "What is governance?" --threshold 0.85 --limit 10
+
+# Keyword search
+astra-clean search keyword "policy" --fields question,answer
+
+# Search with filters
+astra-clean search similar "HR policy" --category "HR" --source "handbook.xlsx"
+```
+
+### Duplicate Management (Coming Soon)
+
+```bash
+# Find exact duplicates
+astra-clean duplicates find --method exact
+
+# Find semantic duplicates
+astra-clean duplicates find --method semantic --threshold 0.90
+
+# Interactive duplicate review
+astra-clean duplicates review --threshold 0.90
+
+# Remove duplicates with preview
+astra-clean duplicates remove --method exact --keep first --preview
+```
+
+### Quality Management (Coming Soon)
+
+```bash
+# Run quality check
+astra-clean quality check --report
+
+# Find quality issues
+astra-clean quality find --empty-answers --short-questions
+
+# Interactive quality fix
+astra-clean quality fix --interactive
+```
+
+### Export/Import (Coming Soon)
+
+```bash
+# Export to JSON
+astra-clean export --format json --output backup.json
+
+# Export to CSV with filters
+astra-clean export --format csv --category "HR" --output hr_data.csv
+
+# Import with duplicate checking
+astra-clean import --file data.json --check-duplicates --preview
+```
+
+## Project Structure
+
+```
+astraDB-quality-check-tool/
+├── src/
+│   ├── cli.py                 # Main CLI entry point
+│   ├── config.py              # Configuration management
+│   ├── db/
+│   │   ├── connection.py      # AstraDB connection handler
+│   │   └── operations.py      # CRUD operations
+│   ├── search/                # Search functionality (coming soon)
+│   ├── cleanup/               # Duplicate detection (coming soon)
+│   ├── operations/            # Batch operations (coming soon)
+│   ├── export_import/         # Export/Import (coming soon)
+│   ├── audit/                 # Audit logging (coming soon)
+│   └── utils/
+│       ├── display.py         # Rich table formatting
+│       └── validators.py      # Input validation
+├── tests/                     # Unit tests
+├── docs/                      # Documentation
+├── .env.example               # Example environment file
+├── requirements.txt           # Python dependencies
+├── setup.py                   # Package setup
+└── README.md                  # This file
+```
+
+## Database Schema
+
+Your AstraDB collection should have the following fields:
+
+```
+- _id: Document identifier
+- question: Question text
+- answer: Answer text
+- source_file: Origin file name
+- category: Content category
+- document_date: Date of document
+- upload_timestamp: When uploaded
+- version: Version number
+- sheet_name: Excel sheet name (if applicable)
+- $vector: Vector embeddings (IBM sentence transformer 30M)
+```
+
+## Development
+
+### Running Tests
+
+```bash
+pytest tests/
+```
+
+### Code Formatting
+
+```bash
+black src/
+```
+
+### Linting
+
+```bash
+flake8 src/
+```
+
+## Logging
+
+Logs are written to `astra_clean.log` in the current directory. You can monitor the log file:
+
+```bash
+tail -f astra_clean.log
+```
+
+## Troubleshooting
+
+### Connection Issues
+
+1. Verify your `.env` file has correct credentials
+2. Check that your AstraDB token has not expired
+3. Ensure your IP is whitelisted in AstraDB (if applicable)
+4. Test connection: `astra-clean test-connection`
+
+### Import Errors
+
+If you get import errors after installation:
+
+```bash
+pip install -e . --force-reinstall
+```
+
+### Permission Issues
+
+Ensure the audit log directory is writable:
+
+```bash
+mkdir -p audit_logs
+chmod 755 audit_logs
+```
+
+## Roadmap
+
+### Phase 1: Core Infrastructure ✅
+- [x] Project setup and dependencies
+- [x] AstraDB connection
+- [x] Basic CLI structure
+- [x] Configuration management
+
+### Phase 2: Search & Discovery (In Progress)
+- [ ] Similarity search
+- [ ] Keyword search
+- [ ] Advanced filtering
+
+### Phase 3: Duplicate Management
+- [ ] Exact duplicate detection
+- [ ] Semantic duplicate detection
+- [ ] Interactive review interface
+
+### Phase 4: Data Operations
+- [ ] Batch updates
+- [ ] Merge functionality
+- [ ] Quality scoring
+
+### Phase 5: Import/Export
+- [ ] JSON export/import
+- [ ] CSV export/import
+- [ ] Validation
+
+### Phase 6: Audit & Safety
+- [ ] Audit logging
+- [ ] Undo functionality
+- [ ] Preview mode
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+MIT License - See LICENSE file for details
+
+## Support
+
+For issues and questions:
+- Check the documentation in `docs/`
+- Review the logs in `astra_clean.log`
+- Open an issue on GitHub
+
+## Acknowledgments
+
+- Built with [AstraPy](https://github.com/datastax/astrapy) - DataStax AstraDB Python SDK
+- CLI powered by [Click](https://click.palletsprojects.com/)
+- Beautiful output with [Rich](https://rich.readthedocs.io/)
+# craft-astradb-quality-tool
