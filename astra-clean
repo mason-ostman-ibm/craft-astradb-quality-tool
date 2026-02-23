@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# AstraDB Quality Check Tool - Command Wrapper
+# This script allows you to run 'astra-clean' from anywhere
+
+# Get the directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Activate virtual environment and run the Python script
+source "$SCRIPT_DIR/venv/bin/activate"
+python3 "$SCRIPT_DIR/astra_clean.py" "$@"
